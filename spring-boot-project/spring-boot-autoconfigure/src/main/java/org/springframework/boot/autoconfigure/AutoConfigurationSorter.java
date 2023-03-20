@@ -58,11 +58,13 @@ class AutoConfigurationSorter {
 		// Initially sort alphabetically
 		Collections.sort(orderedClassNames);
 		// Then sort by order
+		// @AutoConfigureOrder 自动加载配置类排序
 		orderedClassNames.sort((o1, o2) -> {
 			int i1 = classes.get(o1).getOrder();
 			int i2 = classes.get(o2).getOrder();
 			return Integer.compare(i1, i2);
 		});
+		// 优先级更高
 		// Then respect @AutoConfigureBefore @AutoConfigureAfter
 		orderedClassNames = sortByAnnotation(classes, orderedClassNames);
 		return orderedClassNames;
@@ -70,15 +72,23 @@ class AutoConfigurationSorter {
 
 	private List<String> sortByAnnotation(AutoConfigurationClasses classes,
 			List<String> classNames) {
-		List<String> toSort = new ArrayList<>(classNames);
-		Set<String> sorted = new LinkedHashSet<>();
-		Set<String> processing = new LinkedHashSet<>();
+		List<String> toSort = new ArrayList<>(classNames); // 将要排序的
+		Set<String> sorted = new LinkedHashSet<>(); // 排序好的
+		Set<String> processing = new LinkedHashSet<>(); // 正在排序的
 		while (!toSort.isEmpty()) {
 			doSortByAfterAnnotation(classes, toSort, sorted, processing, null);
 		}
 		return new ArrayList<>(sorted);
 	}
 
+	/**
+	 *
+	 * @param classes
+	 * @param toSort 即将排序
+	 * @param sorted 已排序
+	 * @param processing 排序中
+	 * @param current
+	 */
 	private void doSortByAfterAnnotation(AutoConfigurationClasses classes,
 			List<String> toSort, Set<String> sorted, Set<String> processing,
 			String current) {
@@ -86,15 +96,17 @@ class AutoConfigurationSorter {
 			current = toSort.remove(0);
 		}
 		processing.add(current);
-		for (String after : classes.getClassesRequestedAfter(current)) {
+
+		// 如果不存在关系，则加入sorted中
+		for (String after : classes.getClassesRequestedAfter(current)) { // 找到当前 current 配置类之前加载的所有配置类
 			Assert.state(!processing.contains(after),
 					"AutoConfigure cycle detected between " + current + " and " + after);
-			if (!sorted.contains(after) && toSort.contains(after)) {
+			if (!sorted.contains(after) && toSort.contains(after)) { // 已排序不包含after、将排序包含after
 				doSortByAfterAnnotation(classes, toSort, sorted, processing, after);
 			}
 		}
 		processing.remove(current);
-		sorted.add(current);
+		sorted.add(current); // 如果有优先加载的类，则当前类后加入排好序的集合
 	}
 
 	private static class AutoConfigurationClasses {
@@ -114,12 +126,12 @@ class AutoConfigurationSorter {
 			return this.classes.get(className);
 		}
 
-		public Set<String> getClassesRequestedAfter(String className) {
+		public Set<String> getClassesRequestedAfter(String className) { // 当前 className 配置类
 			Set<String> rtn = new LinkedHashSet<>();
-			rtn.addAll(get(className).getAfter());
+			rtn.addAll(get(className).getAfter()); // 把 className 配置类，之前执行的配置加入集合     // 视角：className 配置类，配置的after的所有类先执行  -->  表示 className 在哪些类之后执行加载
 			for (Map.Entry<String, AutoConfigurationClass> entry : this.classes
 					.entrySet()) {
-				if (entry.getValue().getBefore().contains(className)) {
+				if (entry.getValue().getBefore().contains(className)) { //把 className 配置类，之前执行的配置加入集合 // 视角：其他配置类，判断是否在 className 配置类，之前加载 --> 表示当前类，在 className 之前执行加载
 					rtn.add(entry.getKey());
 				}
 			}

@@ -40,7 +40,7 @@ final class AutoConfigurationMetadataLoader {
 	}
 
 	public static AutoConfigurationMetadata loadMetadata(ClassLoader classLoader) {
-		return loadMetadata(classLoader, PATH);
+		return loadMetadata(classLoader, PATH); // 加载元数据信息
 	}
 
 	static AutoConfigurationMetadata loadMetadata(ClassLoader classLoader, String path) {

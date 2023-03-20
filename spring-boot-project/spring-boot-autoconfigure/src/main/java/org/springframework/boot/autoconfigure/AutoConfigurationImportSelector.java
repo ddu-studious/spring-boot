@@ -90,17 +90,17 @@ public class AutoConfigurationImportSelector
 		}
 		try {
 			AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
-					.loadMetadata(this.beanClassLoader);
+					.loadMetadata(this.beanClassLoader); // 加载元数据 META-INF/spring-autoconfigure-metadata.properties
 			AnnotationAttributes attributes = getAttributes(annotationMetadata);
 			List<String> configurations = getCandidateConfigurations(annotationMetadata,
-					attributes);
-			configurations = removeDuplicates(configurations);
-			configurations = sort(configurations, autoConfigurationMetadata);
+					attributes); // 获取配置候选者 spring.factories 中 org.springframework.boot.autoconfigure.EnableAutoConfiguration=对应的配置加载
+			configurations = removeDuplicates(configurations); // list -> set -> list 排重
+			configurations = sort(configurations, autoConfigurationMetadata); // 排序
 			Set<String> exclusions = getExclusions(annotationMetadata, attributes);
-			checkExcludedClasses(configurations, exclusions);
+			checkExcludedClasses(configurations, exclusions); // 排除
 			configurations.removeAll(exclusions);
-			configurations = filter(configurations, autoConfigurationMetadata);
-			fireAutoConfigurationImportEvents(configurations, exclusions);
+			configurations = filter(configurations, autoConfigurationMetadata); // 过滤
+			fireAutoConfigurationImportEvents(configurations, exclusions); // 触发自动配置导入事件
 			return StringUtils.toStringArray(configurations);
 		}
 		catch (IOException ex) {
@@ -154,7 +154,7 @@ public class AutoConfigurationImportSelector
 	protected List<String> getCandidateConfigurations(AnnotationMetadata metadata,
 			AnnotationAttributes attributes) {
 		List<String> configurations = SpringFactoriesLoader.loadFactoryNames(
-				getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());
+				getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader()); // org.springframework.boot.autoconfigure.EnableAutoConfiguration=
 		Assert.notEmpty(configurations,
 				"No auto configuration classes found in META-INF/spring.factories. If you "
 						+ "are using a custom packaging, make sure that file is correct.");
@@ -294,7 +294,7 @@ public class AutoConfigurationImportSelector
 
 	private void fireAutoConfigurationImportEvents(List<String> configurations,
 			Set<String> exclusions) {
-		List<AutoConfigurationImportListener> listeners = getAutoConfigurationImportListeners();
+		List<AutoConfigurationImportListener> listeners = getAutoConfigurationImportListeners(); // AutoConfigurationImportListener 实现类加载
 		if (!listeners.isEmpty()) {
 			AutoConfigurationImportEvent event = new AutoConfigurationImportEvent(this,
 					configurations, exclusions);
