@@ -96,10 +96,10 @@ public class AutoConfigurationImportSelector
 					attributes); // 获取配置候选者 spring.factories 中 org.springframework.boot.autoconfigure.EnableAutoConfiguration=对应的配置加载
 			configurations = removeDuplicates(configurations); // list -> set -> list 排重
 			configurations = sort(configurations, autoConfigurationMetadata); // 排序
-			Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+			Set<String> exclusions = getExclusions(annotationMetadata, attributes);// 加载排除配置类，两个地方：1、配置文件；2、注解中配置
 			checkExcludedClasses(configurations, exclusions); // 排除
 			configurations.removeAll(exclusions);
-			configurations = filter(configurations, autoConfigurationMetadata); // 过滤
+			configurations = filter(configurations, autoConfigurationMetadata); // 过滤   注解中可以加入过滤器Filter，将排除不需要的类
 			fireAutoConfigurationImportEvents(configurations, exclusions); // 触发自动配置导入事件
 			return StringUtils.toStringArray(configurations);
 		}

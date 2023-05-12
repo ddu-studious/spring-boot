@@ -126,6 +126,10 @@ class AutoConfigurationSorter {
 			return this.classes.get(className);
 		}
 
+		// 找到当前类的之后执行的类：
+		// 1、当前类的@AutoConfigureAfter注解中的类
+		// 2、其他类 @AutoConfigureBefore 配置中包含当前类的类
+		// 以上两种类都是当前类的After执行的类
 		public Set<String> getClassesRequestedAfter(String className) { // 当前 className 配置类
 			Set<String> rtn = new LinkedHashSet<>();
 			rtn.addAll(get(className).getAfter()); // 把 className 配置类，之前执行的配置加入集合     // 视角：className 配置类，配置的after的所有类先执行  -->  表示 className 在哪些类之后执行加载
